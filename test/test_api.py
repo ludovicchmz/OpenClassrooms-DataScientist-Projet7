@@ -3,7 +3,7 @@ import json
 import os
 
 def test_api_prediction():
-    with open(os.path.join(os.path.dirname(__file__), "data", "sample_input.json"), "r") as f:
+    with open("sample_input.json", "r") as f:
         data = json.load(f)
 
     response = requests.post("http://localhost:1234/invocations", json=data)
