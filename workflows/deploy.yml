@@ -16,11 +16,9 @@ jobs:
         with:
           python-version: '3.9'
       - name: Installer les dépendances
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
       - name: Exécuter les tests
-        run: |
-          pytest tests/
+        run: pytest test/
 
   deploy:
     needs: test
