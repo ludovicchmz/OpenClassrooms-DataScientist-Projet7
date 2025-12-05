@@ -1,12 +1,18 @@
-import requests
+import pytest
 import json
-import os
+import pandas as pd
+from fastapi.testclient import TestClient
+from main import app
 
-def test_api_prediction():
-    with open("sample_input.json", "r") as f:
+client = TestClient(app)
+
+def test_predict_with_valid_data():
+    # Charger un exemple valide depuis sample_input.json
+    with open("test/sample_input.json", "r") as f:
         data = json.load(f)
 
-    response = requests.post("http://localhost:1234/invocations", json=data)
-
+    response = client.post("/predict", json=data)
     assert response.status_code == 200
-    assert "predictions" in response.json()
+    assert "probabilité" in response.json()
+    assert "classe" in response.json()
+    assert len(response.json()["probabilité"]) == len(data["inputs"])
