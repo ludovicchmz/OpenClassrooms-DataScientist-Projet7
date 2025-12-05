@@ -13,7 +13,7 @@ sns.set_theme()
 
 st.title("Informations sur la décision d'accord du prêt au client")
 
-clients_list = requests.get("https://yfourniep7app-ff49685dca43.herokuapp.com/clients_list").json()
+clients_list = requests.get("https://openclassrooms-datascientist-projet7.onrender.com/clients_list").json()
 
 ## Pour le menu déroulant permettant de sélectionner l'identifiant voulu
 option = st.sidebar.selectbox(
@@ -24,7 +24,7 @@ st.sidebar.write(f"Client sélectionné : :blue[{option}]")
 
 ## Pour la probabilité de faire défaut :
 params = {'id' : option} # Ceci servira de nouveau
-url_proba = "https://yfourniep7app-ff49685dca43.herokuapp.com/predict_proba"
+url_proba = "https://openclassrooms-datascientist-projet7.onrender.com/predict_proba"
 client_proba = np.round(requests.get(url_proba, params = params).json()*100,1)
 
 
@@ -69,7 +69,7 @@ st.header("1. Explication (optionnelle) de la prise de décision du modèle")
 explainer = pickle.load(open('explainer.sav', 'rb'))
 
 # Récupération des features de notre client préféré
-url_features = "https://yfourniep7app-ff49685dca43.herokuapp.com/client_features_prep"
+url_features = "https://openclassrooms-datascientist-projet7.onrender.com/client_features_prep"
 client_feats = requests.get(url_features, params = params).json()
 
 # On utilise l'explainer pour obtenir un waterfall plot
@@ -91,7 +91,7 @@ if waterfall_box:
 ## Pour l'affichage d'une sélection de features
 #
 # Récupération des features non scalées
-url_client = "https://yfourniep7app-ff49685dca43.herokuapp.com/client_features"
+url_client = "https://openclassrooms-datascientist-projet7.onrender.com/client_features"
 my_client = requests.get(url_client, params = params).json()
 
 data_client = pd.DataFrame()
@@ -124,7 +124,7 @@ data = {"id" : option,
 headers = {"Content-Type": "application/json; charset=utf-8"}
 
 # Récupération de mon dictionnaire fourni par l'API
-url = "https://yfourniep7app-ff49685dca43.herokuapp.com/similar_clients"
+url = "https://openclassrooms-datascientist-projet7.onrender.com/similar_clients"
 neighbors_features = requests.post(url, data = json.dumps(data), headers = headers)
 n_f = pd.DataFrame(neighbors_features.json())
 feat_compare = st.multiselect("Pour quelles features souhaitez vous une comparaison ?",
