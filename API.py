@@ -130,5 +130,12 @@ def smilarclients():
 
     return df_neighbors.to_dict()
 
+# Pour le menu principal
+@app.route('/', methods=['GET'])
+def home():
+    return "Bienvenue sur l'API de prédiction de crédit ! Voici les endpoints disponibles : <br>" \
+           "/clients_list : Liste des identifiants des clients <br>" \
+           "/predict_proba?id=XXX : Prédiction de la probabilité de défaut pour un client donné"
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
