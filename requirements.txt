@@ -2,13 +2,13 @@ pandas
 numpy
 matplotlib
 seaborn
-scikit-learn==1.2.2
+scikit-learn
 xgboost
 lightgbm
 imbalanced-learn
 imblearn
 lime
-shap==0.43.0
+shap
 mlflow
 pickleshare
 evidently
