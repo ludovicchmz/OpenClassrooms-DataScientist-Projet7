@@ -1,8 +1,7 @@
 """
 API Code
 """
-from flask import Flask
-from flask import request
+from flask import Flask, jsonify, request, make_response
 import pandas as pd
 import pickle
 from sklearn.neighbors import NearestNeighbors
@@ -47,95 +46,76 @@ def get_client_feats(clients, id):
 
 @app.route('/predict_proba', methods = ['GET'])
 def prob():
-    # Check if an ID was provided as part of the URL.
-    # If ID is provided, assign it to a variable.
-    # If no ID is provided, display an error in the browser.
     if 'id' in request.args:
         id = int(request.args['id'])
     else:
-        return "Error: No id field provided. Please specify an id."
+        return jsonify({"error": "No id field provided. Please specify an id."}), 400
 
-    # Now we check if the id is valid (is it in test_8 ?)
-    if id not in clients["SK_ID_CURR"].values :
-        return "Error : Invalid id provided. id not in testing set"
-    else:
-        # We select the good row and drop the id
-        client = clients.loc[clients["SK_ID_CURR"] == id,:].drop(columns = ["SK_ID_CURR"])
+    if id not in clients["SK_ID_CURR"].values:
+        return jsonify({"error": "Invalid id provided. Id not in testing set"}), 400
 
-        # We get a prediction
-        predicted_failure_rate = model.predict_proba(client.values)[0][1]
-
-        response = str(predicted_failure_rate)
-
-    return response
+    client = clients.loc[clients["SK_ID_CURR"] == id, :].drop(columns=["SK_ID_CURR"])
+    predicted_failure_rate = model.predict_proba(client.values)[0][1]
+    return jsonify({"predicted_failure_rate": predicted_failure_rate})
 
 @app.route('/clients_list', methods = ['GET'])
 def clilist():
-    clients_list = clients["SK_ID_CURR"]
-    return clients_list.to_list()
+    clients_list = clients["SK_ID_CURR"].to_list()
+    return jsonify(clients_list) 
 
 #Pour l'explainer
 @app.route('/client_features_prep', methods = ['GET'])
 def clifeats():
-    # Check if an ID was provided as part of the URL.
-    # If ID is provided, assign it to a variable.
-    # If no ID is provided, display an error in the browser.
     if 'id' in request.args:
         id = int(request.args['id'])
     else:
-        return "Error: No id field provided. Please specify an id."
+        return jsonify({"error": "No id field provided. Please specify an id."}), 400
 
     client = get_client_feats(clients, id)
     prep_client = model[:-1].transform(client)
-
-    return prep_client.tolist()
+    return jsonify(prep_client.tolist())
 
 #Pour l'affichage des features, non scalées
 @app.route('/client_features', methods = ['GET'])
 def clientfeats():
-    # Check if an ID was provided as part of the URL.
-    # If ID is provided, assign it to a variable.
-    # If no ID is provided, display an error in the browser.
     if 'id' in request.args:
         id = int(request.args['id'])
     else:
-        return "Error: No id field provided. Please specify an id."
+        return jsonify({"error": "No id field provided. Please specify an id."}), 400
 
     client = get_client_feats(clients, id)
-
-    return client.tolist()
+    return jsonify(client.tolist())
 
 #Pour l'affichage des features des clients "similaires"
 @app.route('/similar_clients', methods = ['POST'])
 def smilarclients():
-    # Getting the body of the request
     data = request.json
     data_id = data["id"]
     client_index = clients.index[clients["SK_ID_CURR"] == data_id]
     feature_list = data["features"]
 
-    # Using a nearest neighbors tool to get the neighbors
-    for_neighbors = clients.loc[:,["DAYS_BIRTH","AMT_INCOME_TOTAL","AMT_CREDIT"]].values
-    nn = NearestNeighbors(n_neighbors = 11)
+    for_neighbors = clients.loc[:, ["DAYS_BIRTH", "AMT_INCOME_TOTAL", "AMT_CREDIT"]].values
+    nn = NearestNeighbors(n_neighbors=11)
     nn.fit(for_neighbors)
-    distance, indices = nn.kneighbors(for_neighbors[client_index].reshape(1,-1),11)
+    distance, indices = nn.kneighbors(for_neighbors[client_index].reshape(1, -1), 11)
 
-    # Building a DataFrame with our wanted features
-    df_neighbors = pd.DataFrame(columns = feature_list)
+    df_neighbors = pd.DataFrame(columns=feature_list)
     j = 0
     for i in indices[0]:
-        # Une ligne à rallonge pour cause de formatage...
         df_neighbors.loc[j] = clients.iloc[[i]][feature_list].values.tolist()[0]
         j += 1
 
-    return df_neighbors.to_dict()
+    return jsonify(df_neighbors.to_dict()) 
 
 # Pour le menu principal
 @app.route('/', methods=['GET'])
 def home():
-    return "Bienvenue sur l'API de prédiction de crédit ! Voici les endpoints disponibles : <br>" \
-           "/clients_list : Liste des identifiants des clients <br>" \
-           "/predict_proba?id=XXX : Prédiction de la probabilité de défaut pour un client donné"
+    return make_response(
+        "Bienvenue sur l'API de prédiction de crédit ! Voici les endpoints disponibles : <br>" \
+        "/clients_list : Liste des identifiants des clients <br>" \
+        "/predict_proba : Prédiction de la probabilité de défaut pour un client donné",
+        200
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
