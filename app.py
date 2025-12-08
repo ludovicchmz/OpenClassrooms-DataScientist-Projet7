@@ -1,4 +1,3 @@
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -33,11 +32,14 @@ st.sidebar.write(f"Client sélectionné : :blue[{option}]")
 params = {'id': option}
 url_proba = "https://openclassrooms-datascientist-projet7.onrender.com/predict_proba"
 try:
-    client_proba = np.round(
-        requests.get(url_proba, params=params).json() * 100, 1
-    )
+    response = requests.get(url_proba, params=params).json()
+    predicted_failure_rate = response["predicted_failure_rate"]
+    client_proba = np.round(predicted_failure_rate * 100, 1)
 except requests.exceptions.RequestException as e:
     st.error(f"Erreur lors de la récupération de la probabilité : {e}")
+    st.stop()
+except KeyError:
+    st.error("Erreur : La réponse de l'API ne contient pas 'predicted_failure_rate'.")
     st.stop()
 
 # 4. Affichage de la décision et de la jauge
