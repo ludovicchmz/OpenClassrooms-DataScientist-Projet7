@@ -113,7 +113,10 @@ def home():
     return make_response(
         "Bienvenue sur l'API de prédiction de crédit ! Voici les endpoints disponibles : <br>" \
         "/clients_list : Liste des identifiants des clients <br>" \
-        "/predict_proba : Prédiction de la probabilité de défaut pour un client donné",
+        "/predict_proba : Prédiction de la probabilité de défaut pour un client donné <br>" \
+        "/client_features_prep : <br>"
+        "/client_features : <br>"
+        "/similar_clients :",
         200
     )
 
