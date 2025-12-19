@@ -10,14 +10,14 @@ from sklearn.neighbors import NearestNeighbors
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
-# On récupère notre jeu de test, avec les identifiants des clients
+# Récupération du jeu de test avec les ID clients
 clients_raw = pd.read_csv("smallest_test_8.csv")
 clients = clients_raw.sort_values(by = "SK_ID_CURR").reset_index(drop=True)
 
-# On récupère le modèle enregistré
+# Récupération du modèlé
 model = pickle.load(open('selected_model.sav', 'rb'))
 
-#Fonction utile pour plus tard
+# Récupération des features des clients
 def get_client_feats(clients, id):
     """
     Gives us the list of features for our specific client id
@@ -43,7 +43,7 @@ def get_client_feats(clients, id):
         client = clients.loc[clients["SK_ID_CURR"] == id,:].drop(columns = ["SK_ID_CURR"]).values
         return client
 
-
+# Fonction prédiction probabilité de ne pas rembourser
 @app.route('/predict_proba', methods = ['GET'])
 def prob():
     if 'id' in request.args:
@@ -63,7 +63,7 @@ def clilist():
     clients_list = clients["SK_ID_CURR"].to_list()
     return jsonify(clients_list) 
 
-#Pour l'explainer
+# Récupération des features pour l'explainer
 @app.route('/client_features_prep', methods = ['GET'])
 def clifeats():
     if 'id' in request.args:
@@ -75,7 +75,7 @@ def clifeats():
     prep_client = model[:-1].transform(client)
     return jsonify(prep_client.tolist())
 
-#Pour l'affichage des features, non scalées
+# Affichage des features
 @app.route('/client_features', methods = ['GET'])
 def clientfeats():
     if 'id' in request.args:
@@ -86,7 +86,7 @@ def clientfeats():
     client = get_client_feats(clients, id)
     return jsonify(client.tolist())
 
-#Pour l'affichage des features des clients "similaires"
+# Affichage des features des clients similaires
 @app.route('/similar_clients', methods = ['POST'])
 def smilarclients():
     data = request.json
@@ -114,9 +114,9 @@ def home():
         "Bienvenue sur l'API de prédiction de crédit ! Voici les endpoints disponibles : <br>" \
         "/clients_list : Liste des identifiants des clients <br>" \
         "/predict_proba : Prédiction de la probabilité de défaut pour un client donné <br>" \
-        "/client_features_prep : <br>"
-        "/client_features : <br>"
-        "/similar_clients :",
+        "/client_features_prep : Features après traitements pour l'explainer <br>"
+        "/client_features : Features sans traitements pour affichage <br>"
+        "/similar_clients : Clients similaires trouvé grâce à un KNN ",
         200
     )
 
